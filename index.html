@@ -2837,7 +2837,11 @@ async function runPromptCoach(){
     setCoachStatus('Done.');
   }catch(err){
     var detail=(err&&err.message)?err.message:'Unexpected error.';
-    coachResponseEl.textContent='Unable to run the coach.\n\n'+detail+'\n\nIf you use Netlify: deploy the full folder (including netlify/functions), and add site env var OPENROUTER_API_KEY.';
+    var netlifyHint='';
+    if(detail.indexOf('missing API configuration')!==-1){
+      netlifyHint='\n\nNetlify fix: edit OPENROUTER_API_KEY and turn on the Functions scope (required for serverless). “All deploy contexts” is not the same as Functions. Save, then trigger a new deploy.';
+    }
+    coachResponseEl.textContent='Unable to run the coach.\n\n'+detail+netlifyHint+'\n\nOtherwise: deploy the full repo (netlify/functions included) and set OPENROUTER_API_KEY.';
     setCoachStatus(detail);
   }finally{
     coachRunBtn.disabled=false;

@@ -63,7 +63,11 @@ exports.handler = async (event) => {
     return {
       statusCode: 500,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: "Server is missing API configuration." }),
+      body: JSON.stringify({
+        error: "Server is missing API configuration.",
+        details:
+          "In Netlify → Site configuration → Environment variables → edit OPENROUTER_API_KEY: the scope must include Functions (not only Builds). Save, then trigger a new deploy. Docs: netlify.com/docs/functions/environment-variables",
+      }),
     };
   }
 
