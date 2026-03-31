@@ -2502,22 +2502,45 @@ Flag any clinical claim I include that would need MLR review before display. No 
     <label class="coach-label" for="coachPrompt">Paste your prompt</label>
     <textarea id="coachPrompt" class="coach-input" placeholder="Example: Write an email to a cardiologist about our product."></textarea>
 
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+      <div>
+        <label class="coach-label" for="coachRole">Your role</label>
+        <select id="coachRole" class="coach-select" style="width:100%">
+          <option value="">Skip — let AI decide</option>
+          <option value="Customer Engagement Manager">Customer Engagement Manager</option>
+          <option value="Brand Manager">Brand Manager</option>
+          <option value="Medical Affairs">Medical Affairs</option>
+          <option value="Commercial Leader">Commercial Leader</option>
+        </select>
+      </div>
+      <div>
+        <label class="coach-label" for="coachTask">Task type</label>
+        <select id="coachTask" class="coach-select" style="width:100%">
+          <option value="">Skip — let AI decide</option>
+          <option value="Email">Email</option>
+          <option value="Pre-call brief">Pre-call brief</option>
+          <option value="Brand strategy">Brand strategy</option>
+          <option value="Document analysis">Document analysis</option>
+          <option value="Executive memo">Executive memo</option>
+          <option value="Competitive intelligence">Competitive intelligence</option>
+          <option value="Meeting preparation">Meeting preparation</option>
+        </select>
+      </div>
+      <div>
+        <label class="coach-label" for="coachAudience">Audience</label>
+        <input id="coachAudience" class="coach-input" style="min-height:auto;padding:10px 12px;font-family:inherit;font-size:14px;border-radius:10px" placeholder="e.g. Senior interventional cardiologist, time-poor, data-driven">
+      </div>
+      <div>
+        <label class="coach-label" for="coachTone">Tone / style</label>
+        <input id="coachTone" class="coach-input" style="min-height:auto;padding:10px 12px;font-family:inherit;font-size:14px;border-radius:10px" placeholder="e.g. Professional but warm, peer-to-peer, McKinsey-level">
+      </div>
+      <div style="grid-column:1/-1">
+        <label class="coach-label" for="coachConstraints">Constraints</label>
+        <input id="coachConstraints" class="coach-input" style="min-height:auto;padding:10px 12px;font-family:inherit;font-size:14px;border-radius:10px" placeholder="e.g. Max 120 words, no product claims, one clear CTA, flag for MLR review">
+      </div>
+    </div>
+
     <div class="coach-toolbar">
-      <select id="coachRole" class="coach-select">
-        <option value="">Role (optional)</option>
-        <option value="Customer Engagement Manager">Customer Engagement Manager</option>
-        <option value="Brand Manager">Brand Manager</option>
-        <option value="Medical Affairs">Medical Affairs</option>
-        <option value="Commercial Leader">Commercial Leader</option>
-      </select>
-      <select id="coachTask" class="coach-select">
-        <option value="">Task type (optional)</option>
-        <option value="Email">Email</option>
-        <option value="Pre-call brief">Pre-call brief</option>
-        <option value="Brand strategy">Brand strategy</option>
-        <option value="Document analysis">Document analysis</option>
-        <option value="Executive memo">Executive memo</option>
-      </select>
       <button id="coachRunBtn" class="coach-btn" type="button">Coach My Prompt</button>
       <button id="coachCopyBtn" class="coach-copy-btn" type="button" hidden>Copy Optimized Prompt</button>
     </div>
@@ -2764,6 +2787,17 @@ var coachStatusEl=document.getElementById('coachStatus');
 var coachResponseEl=document.getElementById('coachResponse');
 var coachOptimizedPrompt='';
 
+function stripMarkdown(text){
+  return text
+    .replace(/^#{1,6}\s+/gm,'')
+    .replace(/\*\*([^*]+)\*\*/g,'$1')
+    .replace(/\*([^*]+)\*/g,'$1')
+    .replace(/__([^_]+)__/g,'$1')
+    .replace(/_([^_]+)_/g,'$1')
+    .replace(/^[\s]*[-*]\s+/gm,'  - ')
+    .replace(/```[\w-]*\n?/g,'');
+}
+
 function extractOptimizedPrompt(text){
   var fenced=text.match(/```[\w-]*\n([\s\S]*?)```/);
   if(fenced&&fenced[1])return fenced[1].trim();
@@ -2803,7 +2837,10 @@ async function runPromptCoach(){
       body:JSON.stringify({
         prompt:rawPrompt,
         role:coachRoleEl?coachRoleEl.value:'',
-        taskType:coachTaskEl?coachTaskEl.value:''
+        taskType:coachTaskEl?coachTaskEl.value:'',
+        audience:document.getElementById('coachAudience')?document.getElementById('coachAudience').value.trim():'',
+        tone:document.getElementById('coachTone')?document.getElementById('coachTone').value.trim():'',
+        constraints:document.getElementById('coachConstraints')?document.getElementById('coachConstraints').value.trim():''
       })
     });
 
@@ -2845,7 +2882,7 @@ async function runPromptCoach(){
           var content=chunk.choices&&chunk.choices[0]&&chunk.choices[0].delta&&chunk.choices[0].delta.content;
           if(content){
             fullText+=content;
-            coachResponseEl.textContent=fullText;
+            coachResponseEl.textContent=stripMarkdown(fullText);
           }
         }catch(e){}
       }

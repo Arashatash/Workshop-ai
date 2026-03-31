@@ -223,10 +223,16 @@ export default async (req) => {
 
   const role = (payload.role || "").trim();
   const taskType = (payload.taskType || "").trim();
+  const audience = (payload.audience || "").trim();
+  const tone = (payload.tone || "").trim();
+  const constraints = (payload.constraints || "").trim();
 
   const userMessage = [
     role ? `Role context: ${role}` : null,
     taskType ? `Task type: ${taskType}` : null,
+    audience ? `Audience: ${audience}` : null,
+    tone ? `Preferred tone/style: ${tone}` : null,
+    constraints ? `Constraints: ${constraints}` : null,
     "Raw prompt:",
     userPrompt,
   ]
