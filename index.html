@@ -2788,7 +2788,7 @@ async function runPromptCoach(){
   coachCopyBtn.hidden=true;
   coachOptimizedPrompt='';
   setCoachStatus('Coaching your prompt...');
-  coachResponseEl.textContent='Running analysis...';
+  coachResponseEl.textContent='';
 
   try{
     if(window.location.protocol==='file:'){
@@ -2807,41 +2807,65 @@ async function runPromptCoach(){
       })
     });
 
-    var bodyText=await response.text();
-    var payload=null;
-    try{payload=JSON.parse(bodyText);}catch(parseErr){}
+    var contentType=response.headers.get('content-type')||'';
 
-    if(!response.ok){
-      var errMsg='Prompt coach request failed.';
-      if(response.status===404){
-        errMsg='Coach function not deployed (404). Redeploy the whole project so the netlify/functions folder is included, not only index.html.';
-      }else if(payload&&payload.error){
-        errMsg=payload.error;
-        if(payload.details)errMsg+=' '+payload.details;
-      }else if(!payload&&bodyText&&bodyText.indexOf('<!DOCTYPE')===0){
-        errMsg='Unexpected HTML response ('+response.status+'). Check Netlify deploy includes functions and OPENROUTER_API_KEY is set.';
-      }else if(bodyText){
-        errMsg=bodyText.slice(0,280);
-      }
+    if(contentType.indexOf('application/json')!==-1){
+      var payload=await response.json();
+      var errMsg=payload.error||'Unknown error';
+      if(payload.details)errMsg+=' '+payload.details;
       throw new Error(errMsg);
     }
 
-    if(!payload){
-      throw new Error('Invalid response from coach. Try again.');
+    if(!response.ok){
+      var errText=await response.text();
+      if(response.status===404){
+        throw new Error('Coach function not deployed (404). Redeploy the full project so netlify/functions is included.');
+      }
+      throw new Error('Error '+response.status+': '+(errText||'').slice(0,280));
     }
 
-    var output=(payload&&payload.output)?payload.output:'No coaching output returned.';
-    coachResponseEl.textContent=output;
-    coachOptimizedPrompt=extractOptimizedPrompt(output);
-    if(coachOptimizedPrompt)coachCopyBtn.hidden=false;
-    setCoachStatus('Done.');
+    var reader=response.body.getReader();
+    var decoder=new TextDecoder();
+    var fullText='';
+    var sseBuffer='';
+
+    while(true){
+      var result=await reader.read();
+      if(result.done)break;
+      sseBuffer+=decoder.decode(result.value,{stream:true});
+      var lines=sseBuffer.split('\n');
+      sseBuffer=lines.pop();
+      for(var i=0;i<lines.length;i++){
+        var line=lines[i].trim();
+        if(line.indexOf('data: ')!==0)continue;
+        var data=line.slice(6);
+        if(data==='[DONE]')continue;
+        try{
+          var chunk=JSON.parse(data);
+          var content=chunk.choices&&chunk.choices[0]&&chunk.choices[0].delta&&chunk.choices[0].delta.content;
+          if(content){
+            fullText+=content;
+            coachResponseEl.textContent=fullText;
+          }
+        }catch(e){}
+      }
+    }
+
+    if(!fullText){
+      coachResponseEl.textContent='No coaching output returned. Try again.';
+      setCoachStatus('Empty response.');
+    }else{
+      coachOptimizedPrompt=extractOptimizedPrompt(fullText);
+      if(coachOptimizedPrompt)coachCopyBtn.hidden=false;
+      setCoachStatus('Done.');
+    }
   }catch(err){
     var detail=(err&&err.message)?err.message:'Unexpected error.';
     var netlifyHint='';
     if(detail.indexOf('missing API configuration')!==-1){
       netlifyHint='\n\nNetlify fix: edit OPENROUTER_API_KEY and turn on the Functions scope (required for serverless). “All deploy contexts” is not the same as Functions. Save, then trigger a new deploy.';
     }
-    coachResponseEl.textContent='Unable to run the coach.\n\n'+detail+netlifyHint+'\n\nOtherwise: deploy the full repo (netlify/functions included) and set OPENROUTER_API_KEY.';
+    coachResponseEl.textContent='Unable to run the coach.\n\n'+detail+netlifyHint;
     setCoachStatus(detail);
   }finally{
     coachRunBtn.disabled=false;

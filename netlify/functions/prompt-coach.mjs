@@ -188,50 +188,41 @@ Always format your coaching output exactly as:
 7) NEXT ITERATION MOVE
 - One specific follow-up instruction the user can paste immediately to sharpen the output further.`;
 
-exports.handler = async (event) => {
-  if (event.httpMethod !== "POST") {
-    return {
-      statusCode: 405,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: "Method not allowed." }),
-    };
+function jsonError(message, status, details) {
+  return new Response(JSON.stringify({ error: message, details }), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+export default async (req) => {
+  if (req.method !== "POST") {
+    return jsonError("Method not allowed.", 405);
   }
 
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
-    return {
-      statusCode: 500,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        error: "Server is missing API configuration.",
-        details:
-          "In Netlify → Site configuration → Environment variables → edit OPENROUTER_API_KEY: the scope must include Functions (not only Builds). Save, then trigger a new deploy. Docs: netlify.com/docs/functions/environment-variables",
-      }),
-    };
+    return jsonError(
+      "Server is missing API configuration.",
+      500,
+      "In Netlify → Site configuration → Environment variables → edit OPENROUTER_API_KEY: the scope must include Functions. Save, then redeploy."
+    );
   }
 
   let payload;
   try {
-    payload = JSON.parse(event.body || "{}");
-  } catch (_error) {
-    return {
-      statusCode: 400,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: "Invalid JSON request body." }),
-    };
+    payload = await req.json();
+  } catch {
+    return jsonError("Invalid JSON request body.", 400);
   }
 
   const userPrompt = (payload.prompt || "").trim();
+  if (!userPrompt) {
+    return jsonError("Prompt is required.", 400);
+  }
+
   const role = (payload.role || "").trim();
   const taskType = (payload.taskType || "").trim();
-
-  if (!userPrompt) {
-    return {
-      statusCode: 400,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: "Prompt is required." }),
-    };
-  }
 
   const userMessage = [
     role ? `Role context: ${role}` : null,
@@ -243,54 +234,43 @@ exports.handler = async (event) => {
     .join("\n");
 
   try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        temperature: 0.2,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: userMessage },
-        ],
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return {
-        statusCode: response.status,
-        headers: { "Content-Type": "application/json" },
+    const upstream = await fetch(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
-          error: "Prompt coach request failed.",
-          details: data?.error?.message || "Unknown upstream error.",
+          model: MODEL,
+          temperature: 0.2,
+          stream: true,
+          messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            { role: "user", content: userMessage },
+          ],
         }),
-      };
+      }
+    );
+
+    if (!upstream.ok) {
+      const errText = await upstream.text();
+      return jsonError(
+        "Upstream model error.",
+        upstream.status,
+        errText.slice(0, 300)
+      );
     }
 
-    const output = data?.choices?.[0]?.message?.content?.trim();
-    if (!output) {
-      return {
-        statusCode: 502,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ error: "No output returned by model." }),
-      };
-    }
-
-    return {
-      statusCode: 200,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ output }),
-    };
-  } catch (_error) {
-    return {
-      statusCode: 500,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: "Prompt coach is temporarily unavailable." }),
-    };
+    return new Response(upstream.body, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
+    });
+  } catch {
+    return jsonError("Prompt coach is temporarily unavailable.", 500);
   }
 };
