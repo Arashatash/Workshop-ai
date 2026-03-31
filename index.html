@@ -2505,26 +2505,29 @@ Flag any clinical claim I include that would need MLR review before display. No 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
       <div>
         <label class="coach-label" for="coachRole">Your role</label>
-        <select id="coachRole" class="coach-select" style="width:100%">
-          <option value="">Skip — let AI decide</option>
-          <option value="Customer Engagement Manager">Customer Engagement Manager</option>
-          <option value="Brand Manager">Brand Manager</option>
-          <option value="Medical Affairs">Medical Affairs</option>
-          <option value="Commercial Leader">Commercial Leader</option>
-        </select>
+        <input id="coachRole" class="coach-input" list="coachRoleList" style="min-height:auto;padding:10px 12px;font-family:inherit;font-size:14px;border-radius:10px" placeholder="e.g. Brand Manager, CEM, Medical Affairs...">
+        <datalist id="coachRoleList">
+          <option value="Customer Engagement Manager">
+          <option value="Brand Manager">
+          <option value="Medical Affairs">
+          <option value="Commercial Leader">
+          <option value="Market Access">
+          <option value="Sales Representative">
+        </datalist>
       </div>
       <div>
         <label class="coach-label" for="coachTask">Task type</label>
-        <select id="coachTask" class="coach-select" style="width:100%">
-          <option value="">Skip — let AI decide</option>
-          <option value="Email">Email</option>
-          <option value="Pre-call brief">Pre-call brief</option>
-          <option value="Brand strategy">Brand strategy</option>
-          <option value="Document analysis">Document analysis</option>
-          <option value="Executive memo">Executive memo</option>
-          <option value="Competitive intelligence">Competitive intelligence</option>
-          <option value="Meeting preparation">Meeting preparation</option>
-        </select>
+        <input id="coachTask" class="coach-input" list="coachTaskList" style="min-height:auto;padding:10px 12px;font-family:inherit;font-size:14px;border-radius:10px" placeholder="e.g. Email, Pre-call brief, Brand strategy...">
+        <datalist id="coachTaskList">
+          <option value="Email">
+          <option value="Pre-call brief">
+          <option value="Brand strategy">
+          <option value="Document analysis">
+          <option value="Executive memo">
+          <option value="Competitive intelligence">
+          <option value="Meeting preparation">
+          <option value="Presentation outline">
+        </datalist>
       </div>
       <div>
         <label class="coach-label" for="coachAudience">Audience</label>
