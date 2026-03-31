@@ -1,4 +1,4 @@
-const MODEL = "deepseek/deepseek-v3.2";
+const MODEL = "google/gemini-3.1-flash-lite-preview";
 
 const SYSTEM_PROMPT = `You are a rigorous, expert prompt writing coach. You train pharmaceutical commercial teams — Brand Managers and Customer Engagement Managers (CEMs) — but your frameworks apply to any professional.
 
