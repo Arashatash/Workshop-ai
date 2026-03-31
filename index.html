@@ -540,6 +540,36 @@ footer{padding:64px 28px;border-top:1px solid rgba(255,255,255,.06);text-align:c
 .coach-copy-btn[hidden]{display:none}
 .coach-status{margin-top:12px;font-size:13px;color:var(--t3);min-height:18px}
 .coach-response{margin-top:12px;padding:18px;border-radius:var(--radius-sm);border:1px solid var(--prompt-border);background:var(--prompt-bg);color:rgba(255,255,255,.84);font-size:14px;line-height:1.78;white-space:pre-wrap;word-wrap:break-word;min-height:72px}
+.coach-output{display:flex;flex-direction:column;gap:14px;margin-top:16px}
+.coach-opt-block{border:1px solid rgba(25,231,170,.28);border-radius:var(--radius-sm);background:rgba(10,18,26,.96);overflow:hidden}
+.coach-opt-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(25,231,170,.08);border-bottom:1px solid rgba(25,231,170,.18)}
+.coach-opt-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--green)}
+.coach-opt-text{padding:16px 18px;font-family:'JetBrains Mono','SFMono-Regular',Consolas,monospace;font-size:13.5px;line-height:1.7;color:rgba(255,255,255,.88);white-space:pre-wrap;word-wrap:break-word}
+.coach-section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);margin-bottom:8px}
+.coach-blanks-block{border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;background:rgba(8,14,20,.94)}
+.coach-blanks-list{display:flex;flex-direction:column;gap:6px}
+.coach-blank-item{display:flex;align-items:baseline;gap:8px;font-size:13.5px;line-height:1.6;color:var(--t2)}
+.coach-blank-tag{display:inline-block;padding:2px 8px;border-radius:6px;background:rgba(97,190,255,.12);border:1px solid rgba(97,190,255,.22);color:var(--blue);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;white-space:nowrap}
+.coach-score-block{border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;background:rgba(8,14,20,.94)}
+.coach-score-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+.coach-score-total{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}
+.coach-score-label{font-size:13px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+.coach-score-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:13px}
+.coach-score-dim{width:18px;font-weight:700;color:var(--t2);flex-shrink:0}
+.coach-score-bar-bg{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden}
+.coach-score-bar-fill{height:100%;border-radius:4px;transition:width .4s ease}
+.coach-score-val{width:42px;text-align:right;color:var(--t3);font-variant-numeric:tabular-nums;flex-shrink:0}
+.coach-score-fixes{margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
+.coach-score-fixes-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);margin-bottom:6px}
+.coach-score-fix{font-size:13px;color:var(--t2);line-height:1.6;padding-left:14px;position:relative;margin-bottom:2px}
+.coach-score-fix::before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:var(--green)}
+.coach-details{border:1px solid var(--border);border-radius:var(--radius-sm);background:rgba(8,14,20,.94);overflow:hidden}
+.coach-details summary{padding:12px 16px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
+.coach-details summary::before{content:'+';font-size:16px;font-weight:400;color:var(--t3);width:18px;text-align:center}
+.coach-details[open] summary::before{content:'\2212'}
+.coach-details summary::-webkit-details-marker{display:none}
+.coach-details-content{padding:4px 16px 14px;font-size:13.5px;line-height:1.7;color:var(--t2);white-space:pre-wrap;word-wrap:break-word}
+.coach-score-msg{font-size:12px;color:var(--t3);margin-top:4px}
 
 </style>
 </head>
@@ -2496,7 +2526,7 @@ Flag any clinical claim I include that would need MLR review before display. No 
 <div class="s-wm" style="color:var(--green)">07</div>
   <div class="s-num" style="color:var(--green)">Bonus Module</div>
   <h2 class="s-title">Prompt Coach</h2>
-  <p class="s-intro">Paste any draft prompt and get coached using the same SPACE framework, 8 power techniques, and prompt decorators from this workshop. The coach diagnoses gaps, asks for missing context when needed, and rewrites the strongest version you can use immediately.</p>
+  <p class="s-intro">Paste any draft prompt and get a ready-to-use optimized version in seconds. The coach applies the SPACE framework, power techniques, and prompt decorators from this workshop — then shows your prompt score and exactly what to fill in.</p>
 
   <div class="coach-panel">
     <label class="coach-label" for="coachPrompt">Paste your prompt</label>
@@ -2545,14 +2575,59 @@ Flag any clinical claim I include that would need MLR review before display. No 
 
     <div class="coach-toolbar">
       <button id="coachRunBtn" class="coach-btn" type="button">Coach My Prompt</button>
-      <button id="coachCopyBtn" class="coach-copy-btn" type="button" hidden>Copy Optimized Prompt</button>
     </div>
 
     <div id="coachStatus" class="coach-status"></div>
-    <div id="coachResponse" class="coach-response">Your coaching output will appear here.</div>
+
+    <div id="coachOutput" class="coach-output" style="display:none">
+      <div id="coachOptBlock" class="coach-opt-block" style="display:none">
+        <div class="coach-opt-header">
+          <span class="coach-opt-title">Your Optimized Prompt</span>
+          <button id="coachCopyBtn" class="coach-copy-btn" type="button" style="display:none">Copy</button>
+        </div>
+        <div id="coachOptText" class="coach-opt-text"></div>
+      </div>
+
+      <div id="coachBlanksBlock" class="coach-blanks-block" style="display:none">
+        <div class="coach-section-title">Fill These Blanks</div>
+        <div id="coachBlanks" class="coach-blanks-list"></div>
+      </div>
+
+      <div id="coachScoreBlock" class="coach-score-block" style="display:none">
+        <div class="coach-score-header">
+          <div>
+            <span class="coach-score-label">Original Prompt Score</span>
+            <div id="coachScoreMsg" class="coach-score-msg"></div>
+          </div>
+          <span id="coachScoreTotal" class="coach-score-total">--</span>
+        </div>
+        <div id="coachScoreBars"></div>
+        <div id="coachScoreFixes" class="coach-score-fixes" style="display:none">
+          <div class="coach-score-fixes-title">Top Fixes Applied</div>
+          <div id="coachFixesList"></div>
+        </div>
+      </div>
+
+      <details id="coachComplianceBlock" class="coach-details" style="display:none">
+        <summary>Compliance Flag</summary>
+        <div id="coachCompliance" class="coach-details-content"></div>
+      </details>
+
+      <details id="coachWhyBlock" class="coach-details" style="display:none">
+        <summary>Why This Is Better</summary>
+        <div id="coachWhy" class="coach-details-content"></div>
+      </details>
+
+      <details id="coachNextBlock" class="coach-details" style="display:none">
+        <summary>Recommended Next Moves</summary>
+        <div id="coachNext" class="coach-details-content"></div>
+      </details>
+    </div>
+
+    <div id="coachResponse" class="coach-response" style="display:none"></div>
   </div>
 
-  <div class="note note-blue"><strong>How to use:</strong> Start with your raw prompt exactly as you would normally write it. The coach will return a diagnosis, clarification questions, and a final optimized prompt you can copy directly into your tool.</div>
+  <div class="note note-blue"><strong>How to use:</strong> Paste your raw prompt, optionally fill in context fields, and hit Coach My Prompt. You will get an optimized version first — ready to copy — plus a quality score and targeted improvement tips.</div>
 </div>
 </section>
 
@@ -2785,9 +2860,26 @@ var coachPromptEl=document.getElementById('coachPrompt');
 var coachRoleEl=document.getElementById('coachRole');
 var coachTaskEl=document.getElementById('coachTask');
 var coachRunBtn=document.getElementById('coachRunBtn');
-var coachCopyBtn=document.getElementById('coachCopyBtn');
 var coachStatusEl=document.getElementById('coachStatus');
-var coachResponseEl=document.getElementById('coachResponse');
+var coachOutputEl=document.getElementById('coachOutput');
+var coachOptBlock=document.getElementById('coachOptBlock');
+var coachOptText=document.getElementById('coachOptText');
+var coachCopyBtn=document.getElementById('coachCopyBtn');
+var coachBlanksBlock=document.getElementById('coachBlanksBlock');
+var coachBlanksEl=document.getElementById('coachBlanks');
+var coachScoreBlock=document.getElementById('coachScoreBlock');
+var coachScoreTotal=document.getElementById('coachScoreTotal');
+var coachScoreMsg=document.getElementById('coachScoreMsg');
+var coachScoreBars=document.getElementById('coachScoreBars');
+var coachScoreFixes=document.getElementById('coachScoreFixes');
+var coachFixesList=document.getElementById('coachFixesList');
+var coachComplianceBlock=document.getElementById('coachComplianceBlock');
+var coachComplianceEl=document.getElementById('coachCompliance');
+var coachWhyBlock=document.getElementById('coachWhyBlock');
+var coachWhyEl=document.getElementById('coachWhy');
+var coachNextBlock=document.getElementById('coachNextBlock');
+var coachNextEl=document.getElementById('coachNext');
+var coachFallback=document.getElementById('coachResponse');
 var coachOptimizedPrompt='';
 
 function stripMarkdown(text){
@@ -2801,19 +2893,178 @@ function stripMarkdown(text){
     .replace(/```[\w-]*\n?/g,'');
 }
 
-function extractOptimizedPrompt(text){
-  var fenced=text.match(/```[\w-]*\n([\s\S]*?)```/);
-  if(fenced&&fenced[1])return fenced[1].trim();
-  var marker=text.match(/optimized prompt[:\s]*([\s\S]*)/i);
-  return marker&&marker[1]?marker[1].trim():'';
-}
-
 function setCoachStatus(msg){
   if(coachStatusEl)coachStatusEl.textContent=msg||'';
 }
 
+function extractSection(text,startTag,endTag){
+  var si=text.indexOf(startTag);
+  if(si===-1)return null;
+  var contentStart=si+startTag.length;
+  var ei=text.indexOf(endTag,contentStart);
+  var content=ei!==-1?text.substring(contentStart,ei):text.substring(contentStart);
+  return {text:content.trim(),done:ei!==-1};
+}
+
+function scoreColor(pct){
+  if(pct>=0.7)return 'var(--green)';
+  if(pct>=0.4)return '#f0a030';
+  return '#f04040';
+}
+
+function renderScoreCard(scoreText){
+  if(!scoreText)return;
+  var lines=scoreText.split('\n');
+  var dims=[
+    {key:'S',max:20},{key:'P',max:20},{key:'A',max:20},{key:'C',max:25},{key:'E',max:15}
+  ];
+  var total=0,foundTotal=false;
+  var fixes=[];
+  var inFixes=false;
+  for(var i=0;i<lines.length;i++){
+    var line=lines[i].trim();
+    if(!line)continue;
+    if(line.indexOf('TOP_FIXES:')===0){
+      inFixes=true;
+      var rest=line.substring(10).trim();
+      if(rest)fixes.push(rest);
+      continue;
+    }
+    if(inFixes){fixes.push(line.replace(/^[-\s]+/,''));continue;}
+    if(line.indexOf('TOTAL:')===0){
+      var m=line.match(/(\d+)/);
+      if(m){total=parseInt(m[1],10);foundTotal=true;}
+      continue;
+    }
+    for(var d=0;d<dims.length;d++){
+      if(line.indexOf(dims[d].key+':')===0){
+        var m2=line.match(/(\d+)/);
+        if(m2)dims[d].val=parseInt(m2[1],10);
+      }
+    }
+  }
+  if(!foundTotal){total=0;for(var d=0;d<dims.length;d++)total+=(dims[d].val||0);}
+  var color=scoreColor(total/100);
+  coachScoreTotal.textContent=total+'/100';
+  coachScoreTotal.style.color=color;
+  if(coachScoreMsg){
+    if(total>=70)coachScoreMsg.textContent='Your original prompt was already solid.';
+    else if(total>=40)coachScoreMsg.textContent='Some gaps found \u2014 the optimized version addresses them.';
+    else coachScoreMsg.textContent='Significant gaps \u2014 the optimized version is much stronger.';
+  }
+  var html='';
+  for(var d=0;d<dims.length;d++){
+    var v=dims[d].val||0;
+    var pct=Math.round((v/dims[d].max)*100);
+    var c=scoreColor(v/dims[d].max);
+    html+='<div class="coach-score-bar-row">'
+      +'<span class="coach-score-dim">'+dims[d].key+'</span>'
+      +'<div class="coach-score-bar-bg"><div class="coach-score-bar-fill" style="width:'+pct+'%;background:'+c+'"></div></div>'
+      +'<span class="coach-score-val">'+v+'/'+dims[d].max+'</span>'
+      +'</div>';
+  }
+  coachScoreBars.innerHTML=html;
+  if(fixes.length){
+    var fhtml='';
+    for(var f=0;f<fixes.length;f++){
+      fhtml+='<div class="coach-score-fix">'+fixes[f].replace(/</g,'&lt;')+'</div>';
+    }
+    coachFixesList.innerHTML=fhtml;
+    coachScoreFixes.style.display='';
+  }
+}
+
+function renderBlanks(blanksText){
+  if(!blanksText)return;
+  var lines=blanksText.split('\n').filter(function(l){return l.trim();});
+  var html='';
+  for(var i=0;i<lines.length;i++){
+    var parts=lines[i].split(/\s*[\u2014\u2013\-]{1,3}\s*/,2);
+    var tag=parts[0].trim().replace(/</g,'&lt;');
+    var hint=parts[1]?parts[1].trim().replace(/</g,'&lt;'):'';
+    html+='<div class="coach-blank-item"><span class="coach-blank-tag">'+tag+'</span><span>'+hint+'</span></div>';
+  }
+  coachBlanksEl.innerHTML=html;
+}
+
+function resetCoachOutput(){
+  coachOptimizedPrompt='';
+  coachOptBlock.style.display='none';
+  coachOptText.textContent='';
+  coachCopyBtn.style.display='none';
+  coachBlanksBlock.style.display='none';
+  coachBlanksEl.innerHTML='';
+  coachScoreBlock.style.display='none';
+  coachScoreTotal.textContent='--';
+  coachScoreTotal.style.color='';
+  if(coachScoreMsg)coachScoreMsg.textContent='';
+  coachScoreBars.innerHTML='';
+  coachScoreFixes.style.display='none';
+  coachFixesList.innerHTML='';
+  coachComplianceBlock.style.display='none';
+  coachComplianceEl.textContent='';
+  coachWhyBlock.style.display='none';
+  coachWhyEl.textContent='';
+  coachNextBlock.style.display='none';
+  coachNextEl.textContent='';
+  coachFallback.style.display='none';
+  coachFallback.textContent='';
+  coachOutputEl.style.display='none';
+}
+
+function updateCoachUI(fullText){
+  var hasSections=fullText.indexOf('===OPTIMIZED_PROMPT_START===')!==-1;
+  if(!hasSections){
+    coachFallback.style.display='';
+    coachFallback.textContent=stripMarkdown(fullText);
+    return;
+  }
+  coachFallback.style.display='none';
+  coachOutputEl.style.display='flex';
+
+  var opt=extractSection(fullText,'===OPTIMIZED_PROMPT_START===','===OPTIMIZED_PROMPT_END===');
+  if(opt&&opt.text){
+    coachOptBlock.style.display='';
+    coachOptText.textContent=stripMarkdown(opt.text);
+    coachOptimizedPrompt=stripMarkdown(opt.text);
+    if(opt.done)coachCopyBtn.style.display='';
+  }
+
+  var blanks=extractSection(fullText,'===FILL_BLANKS_START===','===FILL_BLANKS_END===');
+  if(blanks&&blanks.text){
+    coachBlanksBlock.style.display='';
+    if(blanks.done){renderBlanks(blanks.text);}
+    else{coachBlanksEl.textContent=stripMarkdown(blanks.text);}
+  }
+
+  var score=extractSection(fullText,'===SCORE_START===','===SCORE_END===');
+  if(score&&score.text){
+    coachScoreBlock.style.display='';
+    if(score.done){renderScoreCard(score.text);}
+    else{coachScoreBars.textContent=stripMarkdown(score.text);}
+  }
+
+  var compliance=extractSection(fullText,'===COMPLIANCE_START===','===COMPLIANCE_END===');
+  if(compliance&&compliance.text){
+    coachComplianceBlock.style.display='';
+    coachComplianceEl.textContent=stripMarkdown(compliance.text);
+  }
+
+  var why=extractSection(fullText,'===WHY_BETTER_START===','===WHY_BETTER_END===');
+  if(why&&why.text){
+    coachWhyBlock.style.display='';
+    coachWhyEl.textContent=stripMarkdown(why.text);
+  }
+
+  var next=extractSection(fullText,'===NEXT_MOVES_START===','===NEXT_MOVES_END===');
+  if(next&&next.text){
+    coachNextBlock.style.display='';
+    coachNextEl.textContent=stripMarkdown(next.text);
+  }
+}
+
 async function runPromptCoach(){
-  if(!coachPromptEl||!coachRunBtn||!coachResponseEl)return;
+  if(!coachPromptEl||!coachRunBtn)return;
   var rawPrompt=(coachPromptEl.value||'').trim();
   if(!rawPrompt){
     setCoachStatus('Paste a prompt first.');
@@ -2822,14 +3073,13 @@ async function runPromptCoach(){
   }
 
   coachRunBtn.disabled=true;
-  coachCopyBtn.hidden=true;
-  coachOptimizedPrompt='';
-  setCoachStatus('Coaching your prompt...');
-  coachResponseEl.textContent='';
+  resetCoachOutput();
+  setCoachStatus('Coaching your prompt\u2026');
 
   try{
     if(window.location.protocol==='file:'){
-      coachResponseEl.textContent='This coach needs a live site: open your Netlify URL (or run netlify dev). Opening index.html from your computer cannot reach serverless functions.';
+      coachFallback.style.display='';
+      coachFallback.textContent='This coach needs a live site: open your Netlify URL (or run netlify dev). Opening index.html from your computer cannot reach serverless functions.';
       setCoachStatus('Use HTTPS deployment, not a local file.');
       return;
     }
@@ -2885,18 +3135,18 @@ async function runPromptCoach(){
           var content=chunk.choices&&chunk.choices[0]&&chunk.choices[0].delta&&chunk.choices[0].delta.content;
           if(content){
             fullText+=content;
-            coachResponseEl.textContent=stripMarkdown(fullText);
+            updateCoachUI(fullText);
           }
         }catch(e){}
       }
     }
 
     if(!fullText){
-      coachResponseEl.textContent='No coaching output returned. Try again.';
+      coachFallback.style.display='';
+      coachFallback.textContent='No coaching output returned. Try again.';
       setCoachStatus('Empty response.');
     }else{
-      coachOptimizedPrompt=extractOptimizedPrompt(fullText);
-      if(coachOptimizedPrompt)coachCopyBtn.hidden=false;
+      updateCoachUI(fullText);
       setCoachStatus('Done.');
     }
   }catch(err){
@@ -2905,7 +3155,8 @@ async function runPromptCoach(){
     if(detail.indexOf('missing API configuration')!==-1){
       netlifyHint='\n\nNetlify fix: edit OPENROUTER_API_KEY and turn on the Functions scope (required for serverless). “All deploy contexts” is not the same as Functions. Save, then trigger a new deploy.';
     }
-    coachResponseEl.textContent='Unable to run the coach.\n\n'+detail+netlifyHint;
+    coachFallback.style.display='';
+    coachFallback.textContent='Unable to run the coach.\n\n'+detail+netlifyHint;
     setCoachStatus(detail);
   }finally{
     coachRunBtn.disabled=false;
@@ -2921,7 +3172,7 @@ if(coachCopyBtn){
     if(!coachOptimizedPrompt)return;
     navigator.clipboard.writeText(coachOptimizedPrompt).then(function(){
       var original=coachCopyBtn.textContent;
-      coachCopyBtn.textContent='Copied ✓';
+      coachCopyBtn.textContent='Copied!';
       setTimeout(function(){coachCopyBtn.textContent=original;},1800);
     });
   });
